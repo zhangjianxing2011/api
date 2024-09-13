@@ -172,3 +172,7 @@ dist
 .wrangler/
 wrangler.toml
 
+
+# idea
+.idea
+
