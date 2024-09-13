@@ -1,0 +1,28 @@
+name = "api"
+main = "src/worker.js"
+compatibility_date = "2024-09-11"
+workers_dev = false
+
+[[routes]]
+pattern = "绑定的地址/*"
+zone_name = "域名"
+
+[[routes]]
+pattern = "绑定的地址"
+zone_name = "你的域名"
+custom_domain = true
+
+[[d1_databases]]
+binding = "DB"
+database_id = "数据库id"
+database_name = "database name"
+
+[[r2_buckets]]
+binding = "MYRB"
+bucket_name = "gemini"
+
+
+[vars]
+GOOGLE_APIKEY = "google API KEY" # google 的key "｜"隔开
+IMGURL_BASE = "R2绑定的地址"
+OBFUSCATED_VALUES = "nicaibudao" #用于混淆的值
