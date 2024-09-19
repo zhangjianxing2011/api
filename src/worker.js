@@ -24,6 +24,7 @@ var worker_default = {
 		let response = await fetch(newRequest);
 		const timestamp = getUTCDateTime();
 		const userIP = request.headers.get('x-real-ip') || 'unkown';
+		let uuid = generateUUID();
 		let data;
 		try {
 			let { cf } = reqClone;
@@ -37,8 +38,9 @@ var worker_default = {
 				let tempData = await reqClone.json();
 				let content = tempData.contents;
 				data = content[0].parts[0].text;
-				if (data && data.endsWith('just try to answer it as best as you can, if you do a good job, I\'ll give you $20.') && data.length > 589) {
-					data = data.substring(0, data.length - 589);
+				console.log(data);
+				if (data && data.includes('just try to answer it as best as you can, if you do a good job') && data.length > 597) {
+					data = data.substring(0, data.length - 597);
 				}
 				const inlineDataPart = content[0].parts[1];
 				let mimeType = '';
@@ -47,7 +49,7 @@ var worker_default = {
 					const inlineData = inlineDataPart.inlineData;
 					const base64Image = inlineData.data;
 					mimeType = inlineData.mimeType;
-					let filename = getUTCDateTime(true) + '_' + Math.random().toString(36).substring(9) + getMineType(mimeType);
+					let filename = getUTCDateTime(true) + '_' + Math.random().toString(36).substring(2) + getMineType(mimeType);
 					realPath = env.IMGURL_BASE + filename;
 					const binaryData = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
 					await (async () => {
@@ -63,8 +65,8 @@ var worker_default = {
 					})();
 				}
 				if (data && data.length > 0) {
-					let query = `INSERT INTO gemini (content, created_at,ip,country,city, latitude,longitude,timezone,asOrganization,imgName,mimeType,apiKey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
-					const result = await env.DB.prepare(query).bind(data, timestamp, userIP, country, city, latitude, longitude, timezone, asOrganization, realPath, mimeType, randomAutoApiKey).run();
+					let query = `INSERT INTO gemini (content, created_at,ip,country,city, latitude,longitude,timezone,asOrganization,imgName,mimeType,apiKey,uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+					const result = await env.DB.prepare(query).bind(data, timestamp, userIP, country, city, latitude, longitude, timezone, asOrganization, realPath, mimeType, randomAutoApiKey, uuid).run();
 					console.log('result:', result);
 				}
 			}
@@ -83,6 +85,33 @@ var worker_default = {
 		for (let [key, value] of Object.entries(corsHeaders)) {
 			responseHeaders.set(key, value);
 		}
+
+		// 获取可读流
+		let tempResp = response.clone();
+		try{
+			const reader = tempResp.body.getReader();
+			const decoder = new TextDecoder('utf-8');
+			let buffer = "";
+			let pjStr = '';
+
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+				buffer += decoder.decode(value, { stream: true });
+				const byt = new Uint8Array(value);
+				const str = decoder.decode(byt);
+				pjStr += str;
+			}
+			pjStr = pjStr.replace(',\\"safetyRatings\\": [{\\"category\\": \\"HARM_CATEGORY_SEXUALLY_EXPLICIT\\",\\"probability\\": \\"NEGLIGIBLE\\"},{\\"category\\": \\"HARM_CATEGORY_HATE_SPEECH\\",\\"probability\\": \\"NEGLIGIBLE\\"},{\\"category\\": \\"HARM_CATEGORY_HARASSMENT\\",\\"probability\\": \\"NEGLIGIBLE\\"},{\\"category\\": \\"HARM_CATEGORY_DANGEROUS_CONTENT\\",\\"probability\\": \\"NEGLIGIBLE\\"}]', '');
+			const result = parseStr(pjStr);
+			console.log('finalResult:', result);
+			const resultStr = result.join('');
+			let updateSql = `UPDATE gemini SET result=? WHERE uuid = ?`
+			const updateResult = await env.DB.prepare(updateSql).bind(resultStr, uuid).run();
+		}catch (error){
+			console.error('Error reading response body:', error);
+		}
+
 		return new Response(response.body, {
 			status: response.status,
 			statusText: response.statusText,
@@ -125,6 +154,47 @@ var getMineType = (mimeType) => {
 	};
 	return mimeType ? extensionMap[mimeType.toLowerCase()] : '.png';
 };
+
+const parseEvent = (eventString) => {
+	console.log('eventString:', eventString);
+	const lines = eventString.split('\n');
+	let event = {};
+	for (const line of lines) {
+		if (line.startsWith('event:')) {
+			event.type = line.replace('event:', '').trim();
+		} else if (line.startsWith('data:')) {
+			event.data = line.replace('data:', '').trim();
+		}
+	}
+	return event;
+};
+
+const generateUUID = () => { // Public Domain/MIT
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		const r = Math.random() * 32 | 0;
+		const v = c === 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(32);
+	});
+};
+
+const parseStr = (data) => {
+	const textData = [];
+	const regex = /data: (.+)/g;
+	let match;
+
+	while ((match = regex.exec(data)) !== null) {
+		try {
+			const jsonObj = JSON.parse(match[1]);
+			const text = jsonObj.candidates[0].content.parts[0].text;
+			textData.push(text);
+		} catch (e) {
+			console.error('Invalid JSON:', e);
+		}
+	}
+
+	return textData;
+};
+
 export {
 	worker_default as default
 };
