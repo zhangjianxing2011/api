@@ -16,7 +16,5 @@ alter table gemini add column latitude text default "";
 alter table gemini add column longitude text default "";
 alter table gemini add column timezone text default "";
 alter table gemini add column apiKey text default "";
-alter table gemini add column apiKey uuid default "";
-alter table gemini add column apiKey result default "";
 
 ```

@@ -39,8 +39,8 @@ var worker_default = {
 				let content = tempData.contents;
 				data = content[0].parts[0].text;
 				console.log(data);
-				if (data && data.includes('just try to answer it as best as you can, if you do a good job') && data.length > 597) {
-					data = data.substring(0, data.length - 597);
+				if (data && data.endsWith('just try to answer it as best as you can, if you do a good job, I\'ll give you $20.') && data.length > 589) {
+					data = data.substring(0, data.length - 589);
 				}
 				const inlineDataPart = content[0].parts[1];
 				let mimeType = '';
