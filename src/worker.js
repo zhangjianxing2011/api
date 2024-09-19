@@ -64,11 +64,6 @@ var worker_default = {
 						}
 					})();
 				}
-				if (data && data.length > 0) {
-					let query = `INSERT INTO gemini (content, created_at,ip,country,city, latitude,longitude,timezone,asOrganization,imgName,mimeType,apiKey,uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-					const result = await env.DB.prepare(query).bind(data, timestamp, userIP, country, city, latitude, longitude, timezone, asOrganization, realPath, mimeType, randomAutoApiKey, uuid).run();
-					console.log('result:', result);
-				}
 			}
 		} catch (error) {
 			console.error('Database Error:', error);
@@ -106,8 +101,12 @@ var worker_default = {
 			const result = parseStr(pjStr);
 			console.log('finalResult:', result);
 			const resultStr = result.join('');
-			let updateSql = `UPDATE gemini SET result=? WHERE uuid = ?`
-			const updateResult = await env.DB.prepare(updateSql).bind(resultStr, uuid).run();
+
+			if (data && data.length > 0) {
+				let query = `INSERT INTO gemini (content, created_at,ip,country,city, latitude,longitude,timezone,asOrganization,imgName,mimeType,apiKey,result,uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+				const result = await env.DB.prepare(query).bind(data, timestamp, userIP, country, city, latitude, longitude, timezone, asOrganization, realPath, mimeType, randomAutoApiKey,resultStr, uuid).run();
+				console.log('result:', result);
+			}
 		}catch (error){
 			console.error('Error reading response body:', error);
 		}
