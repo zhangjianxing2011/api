@@ -41,6 +41,9 @@ var worker_default = {
 				console.log(data);
 				if (data && data.endsWith('just try to answer it as best as you can, if you do a good job, I\'ll give you $20.') && data.length > 589) {
 					data = data.substring(0, data.length - 589);
+					while (data.endsWith('-')) {
+						data = data.substring(0, data.length - 1);
+					}
 				}
 				const inlineDataPart = content[0].parts[1];
 				let mimeType = '';
