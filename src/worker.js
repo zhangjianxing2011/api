@@ -52,6 +52,8 @@ var worker_default = {
 					const inlineData = inlineDataPart.inlineData;
 					const base64Image = inlineData.data;
 					mimeType = inlineData.mimeType;
+					console.log('inlineData:', inlineData);
+					console.log(' inlineData.mimeType:', inlineData.mimeType);
 					let filename = getUTCDateTime(true) + '_' + Math.random().toString(36).substring(2) + getMineType(mimeType);
 					realPath = env.IMGURL_BASE + filename;
 					const binaryData = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
@@ -154,23 +156,10 @@ var getMineType = (mimeType) => {
 		'image/jpeg': '.jpg',
 		'image/png': '.png',
 		'image/gif': '.gif',
+		'image/webp': '.webp',
 		'application/pdf': '.pdf'
 	};
-	return mimeType ? extensionMap[mimeType.toLowerCase()] : '.png';
-};
-
-const parseEvent = (eventString) => {
-	console.log('eventString:', eventString);
-	const lines = eventString.split('\n');
-	let event = {};
-	for (const line of lines) {
-		if (line.startsWith('event:')) {
-			event.type = line.replace('event:', '').trim();
-		} else if (line.startsWith('data:')) {
-			event.data = line.replace('data:', '').trim();
-		}
-	}
-	return event;
+	return mimeType ? extensionMap[mimeType.toLowerCase()] ? extensionMap[mimeType.toLowerCase()] : '.' + mimeType.toLowerCase().split('/')[1] : '.png';
 };
 
 const generateUUID = () => { // Public Domain/MIT
