@@ -10,13 +10,15 @@ var worker_default = {
 		const apiKeyOptions = env.GOOGLE_APIKEY.split("|");
 		const apiKey = headers.get('x-goog-api-key');
 
-		if (env.ORIGIN_URL != reqClone.headers.get('origin')) {
-			return new Response({}, {
-				status: 200,
-				statusText: "",
-				headers: {}
-			});
-		}
+		console.log('reqClone.headers:', reqClone,headers);
+
+		// if (env.ORIGIN_URL != reqClone.headers.get('origin')) {
+		// 	return new Response({}, {
+		// 		status: 200,
+		// 		statusText: "",
+		// 		headers: {}
+		// 	});
+		// }
 
 		let randomAutoApiKey;
 		if (apiKey === env.OBFUSCATED_VALUES) {
