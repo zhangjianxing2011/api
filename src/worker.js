@@ -9,11 +9,22 @@ var worker_default = {
 		let headers = new Headers(request.headers);
 		const apiKeyOptions = env.GOOGLE_APIKEY.split("|");
 		const apiKey = headers.get('x-goog-api-key');
+
+		if (env.ORIGIN_URL != reqClone.headers.get('origin')) {
+			return new Response({}, {
+				status: 200,
+				statusText: "",
+				headers: {}
+			});
+		}
+
 		let randomAutoApiKey;
 		if (apiKey === env.OBFUSCATED_VALUES) {
 			const randomApiKey = apiKeyOptions[Math.floor(Math.random() * apiKeyOptions.length)];
 			randomAutoApiKey = randomApiKey;
 			headers.set('x-goog-api-key', randomApiKey);
+			headers.set('Accept-Language', 'zh-CN');
+			headers.set('Content-Type', 'application/json; charset=utf-8');
 		}
 		let newRequest = new Request(targetURL, {
 			method: request.method,
