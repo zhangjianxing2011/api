@@ -63,8 +63,6 @@ var worker_default = {
 					const inlineData = inlineDataPart.inlineData;
 					const base64Image = inlineData.data;
 					mimeType = inlineData.mimeType;
-					console.log('inlineData:', inlineData);
-					console.log(' inlineData.mimeType:', inlineData.mimeType);
 					let filename = getUTCDateTime(true) + '_' + Math.random().toString(36).substring(2) + getMineType(mimeType);
 					realPath = env.IMGURL_BASE + filename;
 					const binaryData = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
