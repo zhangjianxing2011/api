@@ -18,7 +18,6 @@ var worker_default = {
 			});
 		}
 
-
 		let randomAutoApiKey;
 		if (apiKey === env.OBFUSCATED_VALUES) {
 			const randomApiKey = apiKeyOptions[Math.floor(Math.random() * apiKeyOptions.length)];
