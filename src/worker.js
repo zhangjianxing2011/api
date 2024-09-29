@@ -10,6 +10,7 @@ var worker_default = {
 		const apiKeyOptions = env.GOOGLE_APIKEY.split("|");
 		const apiKey = headers.get('x-goog-api-key');
 
+		const user_agent = headers.get('user-agent');
 		if (env.ORIGIN_URL != reqClone.headers.get('origin')) {
 			return new Response({}, {
 				status: 200,
@@ -79,8 +80,8 @@ var worker_default = {
 					})();
 				}
 				if (data && data.length > 0) {
-					let query = `INSERT INTO gemini (content, created_at,ip,country,city, latitude,longitude,timezone,asOrganization,imgName,mimeType,apiKey,uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-					const result = await env.DB.prepare(query).bind(data, timestamp, userIP, country, city, latitude, longitude, timezone, asOrganization, realPath, mimeType, randomAutoApiKey, uuid).run();
+					let query = `INSERT INTO gemini (content, created_at,ip,country,city, latitude,longitude,timezone,asOrganization,imgName,mimeType,apiKey,uuid,user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
+					const result = await env.DB.prepare(query).bind(data, timestamp, userIP, country, city, latitude, longitude, timezone, asOrganization, realPath, mimeType, randomAutoApiKey, uuid,user_agent).run();
 					console.log('result:', result);
 				}
 			}
